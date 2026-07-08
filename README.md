@@ -168,7 +168,7 @@ This app runs like that without any third-party internet connection required aft
 
 ###Non-Local-First for Demo Purposes:
 
-https://huggingface.co/spaces/torresjchristopher/AI-TTB-Label-Verify-App-Demo
+https://torresjchristopher-ai-ttb-label-verify-app-demo.hf.space
 
 ## Why this exists
 
