@@ -290,30 +290,6 @@ Pass / Review / Fail
 ```
 
 
-## Logical design choices
-
-### Positive-evidence matching
-
-The matcher looks for evidence supporting the expected field. It does not penalize a valid field because unrelated text is also present.
-
-For example, this OCR output:
-
-```text
-CASAMIGOS
-TEQUILA 100%
-BLANCO
-JALAPEÑO
-40% ALC. / VOL. (80 PROOF)
-```
-
-supports:
-
-- Brand: `CASAMIGOS`
-- Class/type: `Tequila Blanco`
-- Alcohol content: `40%`
-
-`JALAPEÑO` is treated as an additional descriptor and does not invalidate the class/type match.
-
 ### Field-specific rules
 
 Different fields require different comparison behavior:
@@ -454,6 +430,4 @@ These values exclude deployment, validation, security assessment, support, train
 
 ## Project status
 
-The packaged prototype has a functioning local OCR pipeline, deterministic normalization and matching, CLI/TUI/web modularity, concurrent batch processing, generic required-component scanning, exception review, and manual decision export.
-
-The next stage is a controlled pilot using a representative 50–500-image labeled dataset to measure field accuracy, false-pass rate, exception rate, sustained throughput, and verified labor savings.
+The packaged prototype has a functioning local OCR pipeline, deterministic normalization and matching, CLI/TUI/web modularity, concurrent batch processing, generic required-component scanning, exception review, and manual decision export. With more data, more workflow context, and more data to train on, I could hone in on pain points, performance, and truly train the software to adapt to the workflow in full production, however, this demo highlights the technologies in action with a solution designed for local only implementation and maintenance. 
