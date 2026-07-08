@@ -251,10 +251,11 @@ def save_decision(job_id: str, payload: Dict[str, str] = Body(...)) -> Dict[str,
     result = next((row for row in results if str(row.get("filename", "")).lower() == filename.lower()), None)
     if not result:
         raise HTTPException(404, "Image result not found.")
-    if result.get("overall") == "fail":
-        raise HTTPException(409, "Confirmed failures are automatic failures and cannot be overridden.")
-    if result.get("overall") != "review":
-        raise HTTPException(409, "Only labels marked for review accept a manual decision.")
+    if result.get("overall") not in {"review", "fail"}:
+        raise HTTPException(
+            409,
+            "Only machine review or failure results accept a manual decision."
+        )
 
     with _decision_lock:
         decisions = _load_decisions(job_id)
@@ -262,7 +263,7 @@ def save_decision(job_id: str, payload: Dict[str, str] = Body(...)) -> Dict[str,
             "filename": filename,
             "decision": decision,
             "decided_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-            "original_status": "review",
+            "original_status": str(result.get("overall", "")),
         }
         _write_decisions(job_id, decisions)
     return {"filename": filename, "decision": decision, "saved": True}

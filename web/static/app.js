@@ -30,10 +30,10 @@ function finalState(row){return row.manual_decision||row.overall;}
 function exceptionText(row){return (row.checks||[]).filter(c=>["fail","review"].includes(c.status)).map(c=>`${c.field}: ${c.reason}`).join("; ")||"No exceptions";}
 function resultCard(row,index){
   const state=finalState(row);
-  const clickable=row.overall==="review";
+  const clickable=["review","fail"].includes(row.overall);
   const action=clickable?`<button class="image-button" onclick="openReview(${index})"><img src="/api/jobs/${activeJobId}/images/${encodeURIComponent(row.filename)}" alt="${esc(row.filename)}"><span>Open review</span></button>`:`<div class="image-static"><img src="/api/jobs/${activeJobId}/images/${encodeURIComponent(row.filename)}" alt="${esc(row.filename)}"></div>`;
   let lock="";
-  if(row.overall==="fail") lock='<div class="locked-note">Confirmed failure — automatic fail</div>';
+  if(row.overall==="fail") lock='<div class="locked-note">Automatic finding: fail — human review available</div>';
   if(row.manual_decision) lock=`<div class="manual-note">Manual decision: ${esc(row.manual_decision)}</div>`;
   return `<article class="result-card ${esc(state)}">${action}<div class="result-body"><div class="result-heading"><strong>${esc(row.filename)}</strong><span class="pill ${esc(state)}">${esc(state)}</span></div><div class="result-meta">${esc(row.elapsed_ms)} ms · OCR ${Math.round((row.ocr_confidence||0)*100)}%</div><p>${esc(exceptionText(row))}</p>${lock}</div></article>`;
 }
@@ -48,7 +48,7 @@ document.getElementById("process").onclick=async()=>{const files=[...document.ge
 
 window.openReview=index=>{
   const row=activeRows[index];
-  if(!row||row.overall!=="review")return;
+  if(!row||!["review","fail"].includes(row.overall))return;
   activeReview={index,row};
   document.getElementById("modalTitle").textContent=row.filename;
   document.getElementById("modalImage").src=`/api/jobs/${activeJobId}/images/${encodeURIComponent(row.filename)}`;
@@ -56,7 +56,7 @@ window.openReview=index=>{
   document.getElementById("modalChecks").innerHTML=`<table class="check-table"><thead><tr><th>Check</th><th>Status</th><th>Expected</th><th>Detected</th><th>Reason</th></tr></thead><tbody>${(row.checks||[]).map(c=>`<tr><td>${esc(c.field)}</td><td><span class="pill ${esc(c.status)}">${esc(c.status)}</span></td><td>${esc(c.expected)}</td><td>${esc(c.detected)}</td><td>${esc(c.reason)}</td></tr>`).join("")}</tbody></table>`;
   document.getElementById("modalText").textContent=row.extracted_text||"No OCR text available.";
   const notice=document.getElementById("decisionNotice");
-  notice.textContent=row.manual_decision?`Current manual decision: ${row.manual_decision}`:"This case requires a human decision.";
+  notice.textContent=row.manual_decision?`Current manual decision: ${row.manual_decision}`:`Automatic finding: ${row.overall}. Review the image and make the final human decision.`;
   document.getElementById("reviewModal").classList.add("open");
   document.getElementById("reviewModal").setAttribute("aria-hidden","false");
 };
