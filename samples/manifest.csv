@@ -1,0 +1,3 @@
+filename,application_id,brand_name,class_type,alcohol_content,net_contents,producer_name,producer_address,country_of_origin,imported
+example_front.jpg,APP-1001,OLD TOM DISTILLERY,Kentucky Straight Bourbon Whiskey,45% Alc./Vol.,750 mL,,,,false
+example_import.jpg,APP-1002,CASAMIGOS,Tequila Blanco,40% Alc./Vol.,750 mL,,,Mexico,true

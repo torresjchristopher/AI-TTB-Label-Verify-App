@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TTB LabelVerify</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<header>
+  <div><div class="kicker">LOCAL-ONLY OCR</div><h1>TTB LabelVerify</h1></div>
+</header>
+<main>
+  <section class="card">
+    <h2>1. Edit Label</h2>
+    <div class="grid">
+      <label>Application ID<input id="application_id" placeholder="Optional profile ID"></label>
+      <label>Brand name<input id="brand_name"></label>
+      <label>Class/type<input id="class_type"></label>
+      <label>Alcohol content<input id="alcohol_content" placeholder="40%"></label>
+      <label>Net contents<input id="net_contents" placeholder="750 mL"></label>
+      <label>Producer/bottler<input id="producer_name"></label>
+      <label>Producer address<input id="producer_address"></label>
+      <label>Country of origin<input id="country_of_origin"></label>
+      <label class="check"><input id="imported" type="checkbox"> Imported product</label>
+    </div>
+    <div class="actions">
+      <button id="addRow">Add/update label</button>
+      <button id="clearForm" class="secondary">Clear form</button>
+      <button id="clearProfiles" class="secondary">Clear saved labels</button>
+    </div>
+    <div id="profileRows" class="table-wrap"></div>
+  </section>
+
+  <section class="card">
+    <h2>2. Process Batch</h2>
+    <div class="batch-controls">
+      <label class="upload-zone" for="files">
+        <span class="upload-title">Batch / individual upload</span>
+        <span id="fileCount" class="muted">Choose one or more label images</span>
+        <input id="files" type="file" multiple accept=".jpg,.jpeg,.png,.webp,.tif,.tiff,.bmp">
+      </label>
+      <div class="batch-options">
+        <label>Comparison label
+          <select id="profileSelect"><option value="">Generic TTB Scan</option></select>
+        </label>
+        <label>Workers
+          <select id="workers">
+            <option value="1">1 — Low resource use</option>
+            <option value="2" selected>2 — Recommended</option>
+            <option value="3">3 — High-core CPU</option>
+            <option value="4">4 — High-core CPU</option>
+          </select>
+        </label>
+        <label class="check"><input id="aggressive" type="checkbox"> Aggressive recovery</label>
+      </div>
+    </div>
+    <p id="modeHelp" class="muted">Generic TTB Scan identifies required visible TTB components. Missing items are sent to review rather than failed.</p>
+    <div class="actions"><button id="process">Process batch</button></div>
+    <div id="status" class="status muted">No batch running.</div>
+    <div id="summary"></div>
+    <div id="results" class="results-grid"></div>
+  </section>
+</main>
+<footer>Decision-support prototype. Confirmed failures remain automatic failures; uncertain cases require human review.</footer>
+
+<div id="reviewModal" class="modal" aria-hidden="true">
+  <div class="modal-backdrop" data-close-modal></div>
+  <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button class="modal-close" data-close-modal aria-label="Close">×</button>
+    <div class="modal-layout">
+      <div class="image-viewer">
+        <img id="modalImage" alt="Uploaded label under review">
+      </div>
+      <div class="review-panel">
+        <h2 id="modalTitle">Review label</h2>
+        <div id="modalMeta" class="muted"></div>
+        <div id="modalChecks"></div>
+        <details>
+          <summary>Extracted OCR text</summary>
+          <pre id="modalText"></pre>
+        </details>
+        <div id="decisionNotice" class="decision-notice"></div>
+        <div id="decisionActions" class="decision-actions">
+          <button id="approveReview" class="approve">Approve application</button>
+          <button id="denyReview" class="deny">Deny application</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>
