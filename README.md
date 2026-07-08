@@ -10,8 +10,6 @@ TTB LabelVerify is a modular proof of concept for accelerating repetitive alcoho
 
 All three formats use the same underlying processing pipeline. Changing the interface does not change the OCR model, normalization rules, field-matching behavior, or exported results.
 
-> This project is decision-support software. It does not issue a Certificate of Label Approval, replace regulatory judgment, or make a final legal determination.
-
 ---
 
 ## Local-first security model
@@ -36,7 +34,7 @@ Local-only operation reduces external data exposure, but it does not by itself e
 
 ### CLI
 
-The CLI is the smallest and most automation-friendly format. It is appropriate for:
+The CLI is the smallest and most automation-friendly format with the absolute lowest security vulnerabilities along with the TUI. It is appropriate for:
 
 - Processing entire folders
 - Scheduled or scripted jobs
@@ -46,13 +44,28 @@ The CLI is the smallest and most automation-friendly format. It is appropriate f
 
 ### TUI
 
-The TUI exposes the same capabilities through a guided terminal menu:
+The TUI exposes the same capabilities through a guided terminal menu easier to navigate for audiences:
 
 1. Edit Label
 2. Process Batch
 3. Quit
 
 It adds no graphical framework and uses Python's standard terminal input/output.
+
+### Web interface
+
+The web edition runs locally on `127.0.0.1` and is intended for broader operational use with accesibility for audiences with limited technological fluency. It adds:
+
+- Reusable label profiles
+- Multi-image upload
+- Worker selection
+- Visual exception review
+- Manual approve/deny decisions
+- Downloadable CSV and JSON reports
+
+The web interface is not a separate AI implementation. It calls the same local pipeline used by the CLI and TUI.
+
+---
 
 ---
 
@@ -88,20 +101,6 @@ No OCR system can reliably reconstruct characters that are absent from the sourc
 
 ---
 
-### Web interface
-
-The web edition runs locally on `127.0.0.1` and is intended for broader operational use. It adds:
-
-- Reusable label profiles
-- Multi-image upload
-- Worker selection
-- Visual exception review
-- Manual approve/deny decisions
-- Downloadable CSV and JSON reports
-
-The web interface is not a separate AI implementation. It calls the same local pipeline used by the CLI and TUI.
-
----
 
 ## Why this exists
 
