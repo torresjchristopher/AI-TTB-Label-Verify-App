@@ -155,7 +155,7 @@ Reports include the original filename, application/profile identifier, processin
 
 ---
 
-###Local First Ease, Security, and Accesibility:
+### Local First Ease, Security, and Accesibility:
 
 In a centralized on-premises deployment, only the designated office server or workstation needs Python, ONNX Runtime, the OCR models, and the application dependencies installed. Staff members would use their normal browsers to access the app over the internal network; they would not each install the software. This means only 1 install of dependencies, no installs across the office by employees varying in cybersecurity skill-level, no malformed downloads, simple and easy performance. 
 
@@ -166,7 +166,7 @@ This means the local first option is also the most secure and easiest to install
 This app runs like that without any third-party internet connection required after download. 
 
 
-###Non-Local-First for Demo Purposes:
+### Non-Local-First for Demo Purposes:
 
 https://torresjchristopher-ai-ttb-label-verify-app-demo.hf.space
 
