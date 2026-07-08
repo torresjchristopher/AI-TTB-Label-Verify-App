@@ -14,6 +14,91 @@ All three formats use the same underlying processing pipeline. Changing the inte
 
 ---
 
+## Local-first security model
+
+The most secure deployment mode is local execution through PowerShell or a terminal on an approved workstation.
+
+In local mode:
+
+- OCR inference runs on the workstation CPU.
+- Images are not sent to a third-party AI API.
+- No cloud account or API key is required.
+- The web interface binds to `127.0.0.1` by default rather than exposing itself to the network.
+- Extracted text and reports remain in local output directories.
+- The CLI can be used without starting any HTTP server.
+- The application can operate behind restrictive outbound-firewall policies once dependencies and models are installed.
+
+Local-only operation reduces external data exposure, but it does not by itself establish federal production compliance. A production deployment would still require agency review of access control, audit logging, records retention, encryption, workstation configuration, vulnerability management, and authorization requirements.
+
+### CLI
+
+The CLI is the smallest and most automation-friendly format. It is appropriate for:
+
+- Processing entire folders
+- Scheduled or scripted jobs
+- Performance benchmarking
+- Server environments
+- Restricted workstations where a browser interface is unnecessary
+
+### TUI
+
+The TUI exposes the same capabilities through a guided terminal menu:
+
+1. Edit Label
+2. Process Batch
+3. Quit
+
+It adds no graphical framework and uses Python's standard terminal input/output.
+
+---
+
+## OCR technology
+
+TTB LabelVerify uses **RapidOCR** with **ONNX Runtime** for local CPU inference.
+
+ONNX is the model-execution format and runtime; it is not the OCR model itself. RapidOCR supplies the trained text-detection, orientation, and recognition models. The pipeline performs three related tasks:
+
+1. **Text detection** locates text regions in the image.
+2. **Orientation classification** corrects rotated text where possible.
+3. **Text recognition** converts the detected regions into characters and confidence scores.
+
+The installed RapidOCR configuration uses compact PP-OCR-derived ONNX models. This avoids the much larger PaddlePaddle development and training dependency tree while retaining modern OCR inference capability.
+
+### Recovery for difficult images
+
+A fast first pass is used for normal images. When OCR confidence or text coverage is weak, the application can perform additional recovery passes:
+
+- EXIF orientation correction
+- Image resizing
+- CLAHE contrast enhancement
+- Sharpening
+- Adaptive thresholding
+- Likely label-region cropping
+- Two-to-four-times crop upscaling
+- Rotated neck-label scans
+- Confidence-based deduplication of OCR results
+
+**Aggressive recovery** forces these additional passes. It can improve extraction from small or low-contrast labels, but increases processing time.
+
+No OCR system can reliably reconstruct characters that are absent from the source image because of insufficient resolution, severe blur, glare, obstruction, or an unsubmitted rear panel. Those cases are intentionally routed to review.
+
+---
+
+### Web interface
+
+The web edition runs locally on `127.0.0.1` and is intended for broader operational use. It adds:
+
+- Reusable label profiles
+- Multi-image upload
+- Worker selection
+- Visual exception review
+- Manual approve/deny decisions
+- Downloadable CSV and JSON reports
+
+The web interface is not a separate AI implementation. It calls the same local pipeline used by the CLI and TUI.
+
+---
+
 ## Why this exists
 
 Stakeholder interviews described an annual workload of approximately **150,000 label applications**, handled by **47 agents**, with routine manual review taking approximately **10–15 minutes per application**. Much of that time is spent visually locating and comparing information that is already present in the application record:
@@ -114,90 +199,6 @@ Pass / Review / Fail
         └── Web review interface
 ```
 
-### CLI
-
-The CLI is the smallest and most automation-friendly format. It is appropriate for:
-
-- Processing entire folders
-- Scheduled or scripted jobs
-- Performance benchmarking
-- Server environments
-- Restricted workstations where a browser interface is unnecessary
-
-### TUI
-
-The TUI exposes the same capabilities through a guided terminal menu:
-
-1. Edit Label
-2. Process Batch
-3. Quit
-
-It adds no graphical framework and uses Python's standard terminal input/output.
-
-### Web interface
-
-The web edition runs locally on `127.0.0.1` and is intended for broader operational use. It adds:
-
-- Reusable label profiles
-- Multi-image upload
-- Worker selection
-- Visual exception review
-- Manual approve/deny decisions
-- Downloadable CSV and JSON reports
-
-The web interface is not a separate AI implementation. It calls the same local pipeline used by the CLI and TUI.
-
----
-
-## Local-first security model
-
-The most secure deployment mode is local execution through PowerShell or a terminal on an approved workstation.
-
-In local mode:
-
-- OCR inference runs on the workstation CPU.
-- Images are not sent to a third-party AI API.
-- No cloud account or API key is required.
-- The web interface binds to `127.0.0.1` by default rather than exposing itself to the network.
-- Extracted text and reports remain in local output directories.
-- The CLI can be used without starting any HTTP server.
-- The application can operate behind restrictive outbound-firewall policies once dependencies and models are installed.
-
-Local-only operation reduces external data exposure, but it does not by itself establish federal production compliance. A production deployment would still require agency review of access control, audit logging, records retention, encryption, workstation configuration, vulnerability management, and authorization requirements.
-
----
-
-## OCR technology
-
-TTB LabelVerify uses **RapidOCR** with **ONNX Runtime** for local CPU inference.
-
-ONNX is the model-execution format and runtime; it is not the OCR model itself. RapidOCR supplies the trained text-detection, orientation, and recognition models. The pipeline performs three related tasks:
-
-1. **Text detection** locates text regions in the image.
-2. **Orientation classification** corrects rotated text where possible.
-3. **Text recognition** converts the detected regions into characters and confidence scores.
-
-The installed RapidOCR configuration uses compact PP-OCR-derived ONNX models. This avoids the much larger PaddlePaddle development and training dependency tree while retaining modern OCR inference capability.
-
-### Recovery for difficult images
-
-A fast first pass is used for normal images. When OCR confidence or text coverage is weak, the application can perform additional recovery passes:
-
-- EXIF orientation correction
-- Image resizing
-- CLAHE contrast enhancement
-- Sharpening
-- Adaptive thresholding
-- Likely label-region cropping
-- Two-to-four-times crop upscaling
-- Rotated neck-label scans
-- Confidence-based deduplication of OCR results
-
-**Aggressive recovery** forces these additional passes. It can improve extraction from small or low-contrast labels, but increases processing time.
-
-No OCR system can reliably reconstruct characters that are absent from the source image because of insufficient resolution, severe blur, glare, obstruction, or an unsubmitted rear panel. Those cases are intentionally routed to review.
-
----
 
 ## Logical design choices
 
@@ -441,50 +442,11 @@ Each completed batch can produce:
 
 Reports include the original filename, application/profile identifier, processing status, overall result, elapsed time, OCR confidence, field status, expected value, detected evidence, confidence, and reason.
 
----
-
-## Validation before production use
-
-A production evaluation should use a representative, labeled dataset containing:
-
-- Clean digital artwork
-- Product photographs
-- Front, back, neck, and side panels
-- Curved labels
-- Glare and reflections
-- Decorative fonts
-- Small regulatory text
-- Imported and domestic products
-- Correct applications
-- Deliberately altered applications
-
-Recommended metrics:
-
-- Field extraction accuracy
-- Match precision and recall
-- False-pass rate
-- False-failure rate
-- Review-routing rate
-- Government Warning detection accuracy
-- Median and p95 processing time
-- Batch completion rate
-- Human-review time per exception
-- Verified staff time saved
-
-The most important safety metric is **zero automatic passes when required evidence is unsupported or unreadable**.
-
----
 
 ## Current scope and limitations
 
 - The prototype does not integrate directly with COLAs Online.
-- It does not establish legal compliance by itself.
-- It cannot verify content on an image panel that was not submitted.
-- OCR confidence is not proof of legal font size, physical dimensions, boldness, or placement.
-- Government Warning formatting still requires visual confirmation where image evidence is insufficient.
-- Performance varies by CPU, memory, image resolution, and worker count.
-- Production deployment requires formal security, records, accessibility, and authorization review.
-
+- Potential AI API upscaling of poor quality images.
 ---
 
 ## Project status
