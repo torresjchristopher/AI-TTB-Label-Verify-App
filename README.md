@@ -156,6 +156,21 @@ Reports include the original filename, application/profile identifier, processin
 
 ---
 
+Local First Ease, Security, and Accesibility:
+
+In a centralized on-premises deployment, only the designated office server or workstation needs Python, ONNX Runtime, the OCR models, and the application dependencies installed. Staff members would use their normal browsers to access the app over the internal network; they would not each install the software. This means only 1 install of dependencies, no installs across the office by employees varying in cybersecurity skill-level, no malformed downloads, simple and easy performance. 
+
+The office-wide mode will remain local to the organization’s network, but it also needs IT-managed firewall rules, authentication, HTTPS, access controls, backups, and audit policy before production use. With a central office deployment, only the designated server or main workstation needs the dependencies installed. Everyone else can access the application through a browser over the internal network. They would not need Python, ONNX Runtime, OCR models, or a copy of the repository on their computers.
+
+This means the local first option is also the most secure and easiest to install using a centralized local computer system without any third-party internet access is the most secure. 
+
+This app runs like that without any third-party internet connection required after download. 
+
+
+Non-Local-First for Demo Purposes:
+
+https://ttb-labelverify-demo.onrender.com/
+
 
 ## Why this exists
 
