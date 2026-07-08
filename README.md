@@ -66,59 +66,101 @@ The web edition runs locally on `127.0.0.1` and is intended for broader operatio
 The web interface is not a separate AI implementation. It calls the same local pipeline used by the CLI and TUI.
 
 ---
+---
+
+## Installation
+
+### Recommended: reuse the working ONNX environment
+
+Copy an existing working `.venv` folder into this project, then run:
+
+```powershell
+.\.venv\Scripts\python.exe run_web.py
+```
+
+Open:
+
+```text
+http://127.0.0.1:8000
+```
+
+### Full Windows installation
+
+From PowerShell inside the project folder:
+
+```powershell
+py -3.8 -m venv .venv
+Set-ExecutionPolicy -Scope Process Bypass
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install --no-cache-dir -r requirements.txt
+python run_web.py
+```
+
+### Stop the local web server
+
+Return to PowerShell and press:
+
+```text
+Ctrl+C
+```
 
 ---
 
-## OCR technology
+## Running each interface
 
-TTB LabelVerify uses **RapidOCR** with **ONNX Runtime** for local CPU inference.
+### Web
 
-ONNX is the model-execution format and runtime; it is not the OCR model itself. RapidOCR supplies the trained text-detection, orientation, and recognition models. The pipeline performs three related tasks:
+```powershell
+.\.venv\Scripts\python.exe run_web.py
+```
 
-1. **Text detection** locates text regions in the image.
-2. **Orientation classification** corrects rotated text where possible.
-3. **Text recognition** converts the detected regions into characters and confidence scores.
+### TUI
 
-The installed RapidOCR configuration uses compact PP-OCR-derived ONNX models. This avoids the much larger PaddlePaddle development and training dependency tree while retaining modern OCR inference capability.
+```powershell
+.\.venv\Scripts\python.exe labelscan_tui.py
+```
 
-### Recovery for difficult images
+### CLI self-test
 
-A fast first pass is used for normal images. When OCR confidence or text coverage is weak, the application can perform additional recovery passes:
+```powershell
+.\.venv\Scripts\python.exe labelscan_cli.py self-test
+```
 
-- EXIF orientation correction
-- Image resizing
-- CLAHE contrast enhancement
-- Sharpening
-- Adaptive thresholding
-- Likely label-region cropping
-- Two-to-four-times crop upscaling
-- Rotated neck-label scans
-- Confidence-based deduplication of OCR results
+### CLI folder scan
 
-**Aggressive recovery** forces these additional passes. It can improve extraction from small or low-contrast labels, but increases processing time.
+```powershell
+.\.venv\Scripts\python.exe labelscan_cli.py scan "C:\path\to\labels" --limit 50 --workers 2
+```
 
-No OCR system can reliably reconstruct characters that are absent from the source image because of insufficient resolution, severe blur, glare, obstruction, or an unsubmitted rear panel. Those cases are intentionally routed to review.
+### Difficult-image scan
+
+```powershell
+.\.venv\Scripts\python.exe labelscan_cli.py scan "C:\path\to\labels" --limit 50 --workers 2 --aggressive
+```
+
+---
+
+## Outputs
+
+Each completed batch can produce:
+
+- `results.csv` — field-level comparison results
+- `results.json` — full structured results
+- `summary.json` — aggregate counts and timing
+- `text/` — raw OCR text for each image
+- `review-decisions.csv` — manual approve/deny decisions
+- `review-decisions.json` — structured manual decisions
+
+Reports include the original filename, application/profile identifier, processing status, overall result, elapsed time, OCR confidence, field status, expected value, detected evidence, confidence, and reason.
 
 ---
 
 
 ## Why this exists
 
-Stakeholder interviews described an annual workload of approximately **150,000 label applications**, handled by **47 agents**, with routine manual review taking approximately **10–15 minutes per application**. Much of that time is spent visually locating and comparing information that is already present in the application record:
-
-- Brand name
-- Class/type designation
-- Alcohol content and proof
-- Net contents
-- Producer, bottler, or importer information
-- Country of origin
-- Government Health Warning evidence
-
 TTB LabelVerify automates the high-volume extraction and comparison work while preserving human review for ambiguous images, nuanced wording, and uncertain evidence.
 
-The operating principle is simple:
-
-> **Automate certainty, surface ambiguity, and never convert unreadable evidence into an automatic pass.**
 
 ---
 
@@ -169,6 +211,38 @@ It checks for visible evidence of:
 - Government Warning
 
 Missing information is routed to **Review**, not automatically failed, because a required item may be present on another label panel that was not included in the submitted image.
+
+---
+
+## OCR technology
+
+TTB LabelVerify uses **RapidOCR** with **ONNX Runtime** for local CPU inference.
+
+ONNX is the model-execution format and runtime; it is not the OCR model itself. RapidOCR supplies the trained text-detection, orientation, and recognition models. The pipeline performs three related tasks:
+
+1. **Text detection** locates text regions in the image.
+2. **Orientation classification** corrects rotated text where possible.
+3. **Text recognition** converts the detected regions into characters and confidence scores.
+
+The installed RapidOCR configuration uses compact PP-OCR-derived ONNX models. This avoids the much larger PaddlePaddle development and training dependency tree while retaining modern OCR inference capability.
+
+### Recovery for difficult images
+
+A fast first pass is used for normal images. When OCR confidence or text coverage is weak, the application can perform additional recovery passes:
+
+- EXIF orientation correction
+- Image resizing
+- CLAHE contrast enhancement
+- Sharpening
+- Adaptive thresholding
+- Likely label-region cropping
+- Two-to-four-times crop upscaling
+- Rotated neck-label scans
+- Confidence-based deduplication of OCR results
+
+**Aggressive recovery** forces these additional passes. It can improve extraction from small or low-contrast labels, but increases processing time.
+
+No OCR system can reliably reconstruct characters that are absent from the source image because of insufficient resolution, severe blur, glare, obstruction, or an unsubmitted rear panel. Those cases are intentionally routed to review.
 
 ---
 
@@ -357,93 +431,6 @@ At a loaded labor range of **$40–$80 per hour**, the second illustrative scena
 
 These values exclude deployment, validation, security assessment, support, training, hardware, and ongoing quality-control costs. A controlled pilot with representative labels is required before using them as a budget forecast.
 
----
-
-## Installation
-
-### Recommended: reuse the working ONNX environment
-
-Copy an existing working `.venv` folder into this project, then run:
-
-```powershell
-.\.venv\Scripts\python.exe run_web.py
-```
-
-Open:
-
-```text
-http://127.0.0.1:8000
-```
-
-### Full Windows installation
-
-From PowerShell inside the project folder:
-
-```powershell
-py -3.8 -m venv .venv
-Set-ExecutionPolicy -Scope Process Bypass
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install --no-cache-dir -r requirements.txt
-python run_web.py
-```
-
-### Stop the local web server
-
-Return to PowerShell and press:
-
-```text
-Ctrl+C
-```
-
----
-
-## Running each interface
-
-### Web
-
-```powershell
-.\.venv\Scripts\python.exe run_web.py
-```
-
-### TUI
-
-```powershell
-.\.venv\Scripts\python.exe labelscan_tui.py
-```
-
-### CLI self-test
-
-```powershell
-.\.venv\Scripts\python.exe labelscan_cli.py self-test
-```
-
-### CLI folder scan
-
-```powershell
-.\.venv\Scripts\python.exe labelscan_cli.py scan "C:\path\to\labels" --limit 50 --workers 2
-```
-
-### Difficult-image scan
-
-```powershell
-.\.venv\Scripts\python.exe labelscan_cli.py scan "C:\path\to\labels" --limit 50 --workers 2 --aggressive
-```
-
----
-
-## Outputs
-
-Each completed batch can produce:
-
-- `results.csv` — field-level comparison results
-- `results.json` — full structured results
-- `summary.json` — aggregate counts and timing
-- `text/` — raw OCR text for each image
-- `review-decisions.csv` — manual approve/deny decisions
-- `review-decisions.json` — structured manual decisions
-
-Reports include the original filename, application/profile identifier, processing status, overall result, elapsed time, OCR confidence, field status, expected value, detected evidence, confidence, and reason.
 
 
 ## Current scope and limitations
