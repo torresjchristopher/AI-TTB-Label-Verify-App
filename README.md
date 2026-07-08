@@ -20,13 +20,17 @@ The most secure deployment mode is local execution through PowerShell or a termi
 
 In local mode:
 
+- No cloud account is required.
+- No required cloud OCR API calls in normal operation; OCR and compliance run client-side.
+- No backend database in this prototype; operational data is session-local in browser context.
+- No external API keys required for core scanning flow.
 - OCR inference runs on the workstation CPU.
 - Images are not sent to a third-party AI API.
-- No cloud account or API key is required.
 - The web interface binds to `127.0.0.1` by default rather than exposing itself to the network.
 - Extracted text and reports remain in local output directories.
 - The CLI can be used without starting any HTTP server.
 - The application can operate behind restrictive outbound-firewall policies once dependencies and models are installed.
+- Designed for restricted network environments where outbound ML endpoints may be blocked.
 
 Local-only operation reduces external data exposure, but it does not by itself establish federal production compliance. A production deployment would still require agency review of access control, audit logging, records retention, encryption, workstation configuration, vulnerability management, and authorization requirements.
 
